@@ -160,6 +160,7 @@ async def detect_hero_artifact(
         "odr_title": hero_info["title"],
         "odr_info": hero_info["bio"],
         "odr_media": hero_info["ar_content"],
+        "odr_media_suite": hero_info.get("media_suite", {}),
         "bbox": [round(float(c), 2) for c in xyxy],
         "confidence": round(conf, 4),
         "inference_time_ms": round(elapsed_ms, 2),

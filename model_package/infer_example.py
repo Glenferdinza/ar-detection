@@ -182,8 +182,9 @@ class ProductionARInference:
                 verified.append({
                     "class_id": v_cls,
                     "hero_name": ar_meta.get("display_name", f"Hero_{v_cls}"),
-                    "ar_type": ar_meta.get("ar_type", "none"),
-                    "asset": ar_meta.get("default_asset", ""),
+                    "primary_ar": ar_meta.get("primary_type", "none"),
+                    "default_asset": ar_meta.get("default_asset", ""),
+                    "media_suite": ar_meta.get("media_suite", {}),
                     "confidence": round(v_conf, 4),
                     "bbox": cand["xyxy"]
                 })
@@ -209,5 +210,5 @@ if __name__ == "__main__":
     else:
         for d in detections:
             print(f"Found: {d['hero_name']} (Conf: {d['confidence']*100:.1f}%)")
-            print(f"BBox: {d['bbox']}")
-            print(f"AR Target: {d['ar_type']} -> {d['asset']}")
+            print(f"Primary AR: {d['primary_ar']} -> {d['default_asset']}")
+            print(f"Available Media Suite: {list(d['media_suite'].keys())}")
