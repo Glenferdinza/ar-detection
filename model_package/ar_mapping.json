@@ -1,0 +1,49 @@
+{
+  "classes": [
+    {
+      "class_id": 0,
+      "label": "soekarno",
+      "display_name": "Ir. Soekarno",
+      "ar_type": "illustration_2d",
+      "asset_format": "png",
+      "default_asset": "/static/media/soekarno_2d.png",
+      "description": "Konten Ilustrasi 2D Ir. Soekarno"
+    },
+    {
+      "class_id": 1,
+      "label": "dewantara",
+      "display_name": "Ki Hajar Dewantara",
+      "ar_type": "illustration_3d",
+      "asset_format": "glb",
+      "default_asset": "/static/media/dewantara_3d.glb",
+      "description": "Konten Ilustrasi 3D (.glb / .gltf) Ki Hajar Dewantara"
+    },
+    {
+      "class_id": 2,
+      "label": "kartini",
+      "display_name": "R.A. Kartini",
+      "ar_type": "video_mp4",
+      "asset_format": "mp4",
+      "default_asset": "/static/media/kartini_history.mp4",
+      "description": "Konten Video (Mp4) R.A. Kartini"
+    },
+    {
+      "class_id": 3,
+      "label": "soedirman",
+      "display_name": "Jenderal Soedirman",
+      "ar_type": "comic_2d",
+      "asset_format": "png_carousel",
+      "default_asset": "/static/media/soedirman_comic.png",
+      "description": "Konten Komik 2D Jenderal Soedirman"
+    },
+    {
+      "class_id": 4,
+      "label": "negative",
+      "display_name": "Non-Hero / Visitor",
+      "ar_type": "none",
+      "asset_format": null,
+      "default_asset": null,
+      "description": "Living Human Shield and ambient background rejection"
+    }
+  ]
+}

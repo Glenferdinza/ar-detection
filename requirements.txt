@@ -1,0 +1,12 @@
+torch
+torchvision
+ultralytics
+opencv-python
+pillow
+imagehash
+requests
+duckduckgo_search
+fastapi
+uvicorn
+python-multipart
+onnx

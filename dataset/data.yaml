@@ -1,0 +1,9 @@
+path: C:/Users/ghisy/Downloads/ar-pahlawan/dataset
+train: images/train
+val: images/val
+
+names:
+  0: soekarno
+  1: dewantara
+  2: kartini
+  3: soedirman

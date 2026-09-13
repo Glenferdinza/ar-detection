@@ -1,0 +1,68 @@
+{
+  "heroes": [
+    {
+      "id": "HERO_SOEKARNO",
+      "class_id": 0,
+      "name": "Ir. Soekarno",
+      "title": "Proklamator & Presiden Pertama Republik Indonesia",
+      "birth_year": 1901,
+      "death_year": 1970,
+      "bio": "Koesno Sosrodihardjo atau Ir. Soekarno adalah tokoh proklamator kemerdekaan dan presiden pertama Republik Indonesia, penggagas Pancasila, dan pemimpin Gerakan Non-Blok.",
+      "ar_content": {
+        "type": "illustration_2d",
+        "format": "png",
+        "asset_url": "/static/media/soekarno_2d.png",
+        "title": "Ilustrasi Digital 2D Ir. Soekarno",
+        "interactivity": "tap_speech_quote"
+      }
+    },
+    {
+      "id": "HERO_DEWANTARA",
+      "class_id": 1,
+      "name": "Ki Hajar Dewantara",
+      "title": "Bapak Pendidikan Nasional Indonesia",
+      "birth_year": 1889,
+      "death_year": 1959,
+      "bio": "Raden Mas Soewardi Soerjaningrat mendirikan perguruan Taman Siswa di Yogyakarta dan mencetuskan semboyan Tut Wuri Handayani sebagai tonggak pendidikan nasional.",
+      "ar_content": {
+        "type": "illustration_3d",
+        "format": "glb",
+        "asset_url": "/static/media/dewantara_3d.glb",
+        "title": "Model Ilustrasi 3D Ki Hajar Dewantara",
+        "interactivity": "orbit_rotate_zoom"
+      }
+    },
+    {
+      "id": "HERO_KARTINI",
+      "class_id": 2,
+      "name": "R.A. Kartini",
+      "title": "Pahlawan Emansipasi Wanita Indonesia",
+      "birth_year": 1879,
+      "death_year": 1904,
+      "bio": "Raden Ajeng Kartini memperjuangkan hak dan pendidikan bagi kaum perempuan Indonesia melalui surat-surat monumentalnya yang dihimpun dalam Habis Gelap Terbitlah Terang.",
+      "ar_content": {
+        "type": "video_mp4",
+        "format": "mp4",
+        "asset_url": "/static/media/kartini_history.mp4",
+        "title": "Video Dokumenter Sejarah R.A. Kartini",
+        "interactivity": "video_player_controls"
+      }
+    },
+    {
+      "id": "HERO_SOEDIRMAN",
+      "class_id": 3,
+      "name": "Jenderal Soedirman",
+      "title": "Panglima Besar Tentara Nasional Indonesia",
+      "birth_year": 1916,
+      "death_year": 1950,
+      "bio": "Panglima Besar TNI pertama yang memimpin perang gerilya semesta mempertahankan kemerdekaan Indonesia dari atas tandu dalam kondisi sakit parah.",
+      "ar_content": {
+        "type": "comic_2d",
+        "format": "png_carousel",
+        "asset_url": "/static/media/soedirman_comic.png",
+        "title": "Komik Digital Perjuangan Gerilya Soedirman",
+        "interactivity": "page_swipe"
+      }
+    }
+  ]
+}

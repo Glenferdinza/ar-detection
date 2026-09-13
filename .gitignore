@@ -1,0 +1,31 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# User Privacy & Local Scratches
+scratch/
+output_*
+*.user_uploaded/
+.tempmediaStorage/
+data/negative_faces/
+*.log
+
+# Training Checkpoints & Cache
+runs/
+runs_eval/
+
+# System and IDE Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp

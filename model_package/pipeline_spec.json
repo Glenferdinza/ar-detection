@@ -1,0 +1,39 @@
+{
+  "stage1_detector": {
+    "model_tflite": "tflite/hero_detector.tflite",
+    "model_onnx": "onnx/hero_detector.onnx",
+    "model_pytorch": "pytorch/hero_detector.pt",
+    "input_resolution": [416, 416, 3],
+    "input_color_space": "RGB",
+    "input_normalization": "pixel / 255.0",
+    "confidence_acquisition_threshold": 0.45,
+    "confidence_retention_threshold": 0.25,
+    "nms_iou_threshold": 0.45,
+    "aspect_ratio_max_limit": 2.15,
+    "aspect_ratio_rule": "Discard any candidate where (bbox_height / bbox_width) > 2.15 to suppress standing human bodies"
+  },
+  "stage2_verifier": {
+    "model_tflite": "tflite/hero_verifier.tflite",
+    "model_onnx": "onnx/hero_verifier.onnx",
+    "model_pytorch": "pytorch/hero_verifier.pt",
+    "input_resolution": [128, 128, 3],
+    "input_color_space": "RGB",
+    "input_normalization": {
+      "scale": "pixel / 255.0",
+      "mean": [0.485, 0.456, 0.406],
+      "std": [0.229, 0.224, 0.225]
+    },
+    "num_classes": 5,
+    "classes": ["soekarno", "dewantara", "kartini", "soedirman", "negative"],
+    "acceptance_rules": {
+      "min_hero_probability": 0.50,
+      "min_margin_over_negative": 0.15,
+      "max_negative_probability": 0.35
+    }
+  },
+  "temporal_tracker": {
+    "ema_alpha": 0.65,
+    "max_lost_frames_coasting": 8,
+    "target_fps": 30
+  }
+}
