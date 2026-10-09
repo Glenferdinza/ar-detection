@@ -15,17 +15,32 @@ class ArtefactPreprocessor:
         mean_brightness = float(np.mean(gray))
         contrast = float(gray.std())
 
+        # Tenengrad edge gradient check
+        sobel_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+        sobel_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+        tenengrad_score = float(np.mean(sobel_x**2 + sobel_y**2))
+
+        # Check archival monochrome / sepia tone
+        hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+        saturation = float(np.mean(hsv[:, :, 1]))
+        is_archival_monochrome = bool(saturation < 28.0)
+
+        # Dynamic tolerance for historical archive photos
+        effective_beta_thresh = self.beta_passing_grade * 0.70 if is_archival_monochrome else self.beta_passing_grade
         beta_score = laplacian_var * (contrast / 50.0)
 
+        is_sharp = (beta_score >= effective_beta_thresh) or (is_archival_monochrome and tenengrad_score >= 120.0)
         is_passed = (
-            beta_score >= self.beta_passing_grade and
+            is_sharp and
             20.0 <= mean_brightness <= 248.0 and
-            contrast >= 15.0
+            contrast >= (12.0 if is_archival_monochrome else 15.0)
         )
 
         details = {
             "beta_score": float(beta_score),
             "laplacian_var": laplacian_var,
+            "tenengrad_score": float(tenengrad_score),
+            "is_archival_monochrome": is_archival_monochrome,
             "mean_brightness": mean_brightness,
             "contrast": contrast,
             "is_passed": bool(is_passed)

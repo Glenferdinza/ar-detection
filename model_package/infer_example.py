@@ -120,12 +120,12 @@ class ProductionARInference:
 
         return True, final_cls, float(final_conf), {"probs": probs.tolist()}
 
-    def predict(self, frame_bgr, conf_thresh=0.45):
-        h_orig, w_orig = frame_bgr.shape[:2]
+    def _detect_raw(self, img_bgr, conf_thresh=0.45):
+        h_orig, w_orig = img_bgr.shape[:2]
         candidates = []
 
         if self.backend == "pytorch":
-            results = self.yolo.predict(frame_bgr, conf=max(0.20, conf_thresh - 0.20), imgsz=416, verbose=False)[0]
+            results = self.yolo.predict(img_bgr, conf=max(0.15, conf_thresh - 0.20), imgsz=416, verbose=False)[0]
             for b in results.boxes:
                 conf = float(b.conf[0])
                 cls_id = int(b.cls[0])
@@ -135,7 +135,7 @@ class ProductionARInference:
                     continue
                 candidates.append({"cls": cls_id, "conf": conf, "xyxy": [max(0, x1), max(0, y1), min(w_orig, x2), min(h_orig, y2)]})
         else:
-            input_tensor = cv2.resize(frame_bgr, (416, 416))
+            input_tensor = cv2.resize(img_bgr, (416, 416))
             input_tensor = cv2.cvtColor(input_tensor, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
             input_tensor = np.transpose(input_tensor, (2, 0, 1))[np.newaxis, ...]
 
@@ -149,7 +149,7 @@ class ProductionARInference:
             for i in range(len(boxes)):
                 cls_id = int(np.argmax(scores[i]))
                 score = float(scores[i][cls_id])
-                if score < max(0.20, conf_thresh - 0.20):
+                if score < max(0.15, conf_thresh - 0.20):
                     continue
 
                 cx, cy, bw, bh = boxes[i]
@@ -170,6 +170,10 @@ class ProductionARInference:
                     "xyxy": [max(0, x1), max(0, y1), min(w_orig, x2), min(h_orig, y2)]
                 })
 
+        return candidates
+
+    def predict(self, frame_bgr, conf_thresh=0.45):
+        candidates = self._detect_raw(frame_bgr, conf_thresh=conf_thresh)
         candidates = nms_boxes(candidates, iou_thresh=0.45)
         verified = []
 
@@ -190,6 +194,78 @@ class ProductionARInference:
                 })
 
         return verified
+
+    def predict_tiled(self, frame_bgr, conf_thresh=0.45, tile_size=416, overlap=0.20):
+        # Slicing Aided Hyper Inference (SAHI) for large group archive photos / wall galleries
+        h, w = frame_bgr.shape[:2]
+        if h <= 640 and w <= 640:
+            return self.predict(frame_bgr, conf_thresh=conf_thresh)
+
+        step = int(tile_size * (1.0 - overlap))
+        all_candidates = self._detect_raw(frame_bgr, conf_thresh=conf_thresh)
+
+        for y in range(0, max(1, h - tile_size + 1), step):
+            for x in range(0, max(1, w - tile_size + 1), step):
+                tile = frame_bgr[y:min(h, y + tile_size), x:min(w, x + tile_size)]
+                if tile.shape[0] < 100 or tile.shape[1] < 100:
+                    continue
+                tile_cands = self._detect_raw(tile, conf_thresh=conf_thresh)
+                for tc in tile_cands:
+                    tx1, ty1, tx2, ty2 = tc["xyxy"]
+                    all_candidates.append({
+                        "cls": tc["cls"],
+                        "conf": tc["conf"],
+                        "xyxy": [x + tx1, y + ty1, x + tx2, y + ty2]
+                    })
+
+        candidates = nms_boxes(all_candidates, iou_thresh=0.40)
+        verified = []
+
+        for cand in candidates:
+            x1, y1, x2, y2 = cand["xyxy"]
+            crop = frame_bgr[y1:y2, x1:x2]
+            valid, v_cls, v_conf, meta = self._verify_crop(crop, cand["cls"], cand["conf"])
+            if valid and v_conf >= conf_thresh:
+                ar_meta = self.ar_map.get(v_cls, {})
+                verified.append({
+                    "class_id": v_cls,
+                    "hero_name": ar_meta.get("display_name", f"Hero_{v_cls}"),
+                    "primary_ar": ar_meta.get("primary_type", "none"),
+                    "default_asset": ar_meta.get("default_asset", ""),
+                    "media_suite": ar_meta.get("media_suite", {}),
+                    "confidence": round(v_conf, 4),
+                    "bbox": cand["xyxy"]
+                })
+
+        return verified
+
+class MobileARSession:
+    # Lightweight temporal tracker for 60 FPS mobile AR with frame skipping
+    def __init__(self, engine, detect_interval=5, ema_alpha=0.70):
+        self.engine = engine
+        self.detect_interval = detect_interval
+        self.ema_alpha = ema_alpha
+        self.frame_idx = 0
+        self.current_detections = []
+        self.lost_count = 0
+
+    def process_frame(self, frame_bgr, conf_thresh=0.45):
+        self.frame_idx += 1
+        if self.frame_idx % self.detect_interval == 0 or not self.current_detections:
+            new_dets = self.engine.predict(frame_bgr, conf_thresh=conf_thresh)
+            if new_dets:
+                if self.current_detections and new_dets[0]["class_id"] == self.current_detections[0]["class_id"]:
+                    old_b = np.array(self.current_detections[0]["bbox"], dtype=np.float32)
+                    new_b = np.array(new_dets[0]["bbox"], dtype=np.float32)
+                    smoothed = (self.ema_alpha * new_b) + ((1.0 - self.ema_alpha) * old_b)
+                    new_dets[0]["bbox"] = [int(round(v)) for v in smoothed]
+                self.current_detections = new_dets
+                self.lost_count = 0
+            else:
+                self.lost_count += 1
+                if self.lost_count > 6:
+                    self.current_detections = []
+        return self.current_detections
 
 if __name__ == "__main__":
     test_img = "crop_check.jpg"
