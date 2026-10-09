@@ -40,8 +40,8 @@ def clean_directory(dir_path):
             except Exception:
                 pass
 
-def build_dataset_from_reviewed(review_dir="data/review", output_dir="dataset", variants_per_image=25, val_ratio=0.20):
-    print("Building YOLO Dataset from User-Verified Clean Images...")
+def build_dataset_from_reviewed(review_dir="data/curated", output_dir="dataset", variants_per_image=25, val_ratio=0.20):
+    print(f"Building YOLO Dataset from {review_dir}...")
     random.seed(42)
     np.random.seed(42)
 
@@ -66,7 +66,7 @@ def build_dataset_from_reviewed(review_dir="data/review", output_dir="dataset", 
         image_paths = sorted(glob.glob(os.path.join(cat_dir, "*.jpg")) + glob.glob(os.path.join(cat_dir, "*.png")) + glob.glob(os.path.join(cat_dir, "*.jpeg")))
 
         if not image_paths:
-            print(f"Warning: No reviewed images found in {cat_dir}")
+            print(f"Warning: No images found in {cat_dir}")
             continue
 
         random.shuffle(image_paths)
@@ -87,7 +87,22 @@ def build_dataset_from_reviewed(review_dir="data/review", output_dir="dataset", 
             if img is None:
                 continue
 
-            box = detect_face_or_bust(img)
+            h, w = img.shape[:2]
+            box_f = img_path.rsplit(".", 1)[0] + ".box"
+            if os.path.exists(box_f):
+                try:
+                    with open(box_f, "r") as bf:
+                        coords = [float(v.strip()) for v in bf.read().strip().split(",") if v.strip()]
+                    if len(coords) == 4:
+                        x1, y1, x2, y2 = coords
+                        box = [(x1 + x2)/(2.0*w), (y1 + y2)/(2.0*h), (x2 - x1)/float(w), (y2 - y1)/float(h)]
+                    else:
+                        box = detect_face_or_bust(img)
+                except Exception:
+                    box = detect_face_or_bust(img)
+            else:
+                box = detect_face_or_bust(img)
+
             variants = [(img, box)]
             variants.extend(augmentor.generate_variants(img, box, num_variants=class_variants_per_image))
 
@@ -116,10 +131,22 @@ def build_dataset_from_reviewed(review_dir="data/review", output_dir="dataset", 
             if img is None:
                 continue
 
-            sample_counter += 1
-            total_val += 1
+            h, w = img.shape[:2]
+            box_f = img_path.rsplit(".", 1)[0] + ".box"
+            if os.path.exists(box_f):
+                try:
+                    with open(box_f, "r") as bf:
+                        coords = [float(v.strip()) for v in bf.read().strip().split(",") if v.strip()]
+                    if len(coords) == 4:
+                        x1, y1, x2, y2 = coords
+                        box = [(x1 + x2)/(2.0*w), (y1 + y2)/(2.0*h), (x2 - x1)/float(w), (y2 - y1)/float(h)]
+                    else:
+                        box = detect_face_or_bust(img)
+                except Exception:
+                    box = detect_face_or_bust(img)
+            else:
+                box = detect_face_or_bust(img)
 
-            box = detect_face_or_bust(img)
             std_img, _ = preprocessor.standardize(img)
             img_name = f"{category}_val_{sample_counter:06d}.jpg"
             lbl_name = f"{category}_val_{sample_counter:06d}.txt"

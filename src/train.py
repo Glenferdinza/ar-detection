@@ -2,7 +2,7 @@ import os
 import argparse
 from ultralytics import YOLO
 
-def train_detector(data_yaml="dataset/data.yaml", epochs=10, batch_size=16, imgsz=480, device="cpu", weights="weights/best.pt"):
+def train_detector(data_yaml="dataset/data.yaml", epochs=8, batch_size=16, imgsz=416, device="cpu", weights="weights/best.pt"):
     print(f"Initializing YOLOv8 training on {data_yaml} with Anti-Overfitting Regularization & Handheld Augmentations...")
     os.makedirs("weights", exist_ok=True)
     run_project = os.path.abspath("runs/detect")

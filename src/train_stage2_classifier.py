@@ -29,13 +29,20 @@ def load_crop_from_box(img_path, box_path):
         with open(box_path, "r") as f:
             line = f.readline().strip()
             if line:
-                parts = [float(p) for p in line.split()]
+                cleaned = line.replace(",", " ")
+                parts = [float(p) for p in cleaned.split() if p.strip()]
                 if len(parts) == 4:
-                    bx, by, bw, bh = parts
-                    x1 = max(0, int((bx - bw / 2.0) * w))
-                    y1 = max(0, int((by - bh / 2.0) * h))
-                    x2 = min(w, int((bx + bw / 2.0) * w))
-                    y2 = min(h, int((by + bh / 2.0) * h))
+                    if any(p > 1.0 for p in parts):
+                        x1 = max(0, min(w - 10, int(parts[0])))
+                        y1 = max(0, min(h - 10, int(parts[1])))
+                        x2 = max(x1 + 10, min(w, int(parts[2])))
+                        y2 = max(y1 + 10, min(h, int(parts[3])))
+                    else:
+                        bx, by, bw, bh = parts
+                        x1 = max(0, int((bx - bw / 2.0) * w))
+                        y1 = max(0, int((by - bh / 2.0) * h))
+                        x2 = min(w, int((bx + bw / 2.0) * w))
+                        y2 = min(h, int((by + bh / 2.0) * h))
                     if x2 - x1 > 20 and y2 - y1 > 20:
                         return img[y1:y2, x1:x2]
     pad = int(min(h, w) * 0.1)
